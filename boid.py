@@ -12,6 +12,10 @@ class Boid:
         self.size = 10  # Tamaño del triángulo
         self.perception_radius = 50  # Radio de percepción para los boids cercanos
 
+    def distance(self, point1, point2):
+        # Función para calcular la distancia entre dos puntos
+        return math.sqrt((point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2)
+
     def update(self):
         # Actualiza la posición y la velocidad
         self.velocity[0] += self.acceleration[0]
@@ -120,18 +124,56 @@ class Boid:
         steer = [steer[0] * self.max_force, steer[1] * self.max_force]
         return steer
 
-    def apply_behaviors(self, boids):
+    def avoid_obstacles(self, obstacles):
+        # Evitar los obstáculos
+        steer = [0, 0]
+        total = 0
+        safe_distance = 80  # Aumentar la distancia para empezar a evitar los obstáculos antes
+        max_avoid_force = 0.5  # Incrementar la fuerza máxima de evitación
+
+        for obstacle in obstacles:
+            distance = self.distance(self.position, obstacle)
+            if distance < safe_distance:  # Si está dentro del rango seguro
+                diff = [self.position[0] - obstacle[0], self.position[1] - obstacle[1]]
+                diff = self.normalize(diff)
+                # Aplicar una fuerza inversamente proporcional a la distancia
+                diff = [diff[0] / (distance ** 2), diff[1] / (distance ** 2)]
+                steer[0] += diff[0]
+                steer[1] += diff[1]
+                total += 1
+
+        if total > 0:
+            steer[0] /= total
+            steer[1] /= total
+
+            # Asegurarse de que la magnitud de la fuerza sea adecuada
+            if self.magnitude(steer) > 0:
+                steer = self.normalize(steer)
+                steer = [steer[0] * self.max_speed, steer[1] * self.max_speed]
+                steer[0] -= self.velocity[0]
+                steer[1] -= self.velocity[1]
+
+                # Aumentar la fuerza de evasión de obstáculos
+                steer = self.normalize(steer)
+                steer = [steer[0] * max_avoid_force, steer[1] * max_avoid_force]
+
+        return steer
+    
+    def apply_behaviors(self, boids, obstacles):
         # Aplica las reglas de flocking
         separation_force = self.separation(boids)
         alignment_force = self.alignment(boids)
         cohesion_force = self.cohesion(boids)
+        obstacle_avoidance = self.avoid_obstacles(obstacles)  # Evitar los obstáculos
 
         # Ajusta los pesos de las fuerzas
+        obstacle_avoidance = [obstacle_avoidance[0] * 3.0, obstacle_avoidance[1] * 3.0]  # Dar más peso a la evasión de obstáculos
         separation_force = [separation_force[0] * 1.5, separation_force[1] * 1.5]
         alignment_force = [alignment_force[0] * 1.0, alignment_force[1] * 1.0]
         cohesion_force = [cohesion_force[0] * 1.0, cohesion_force[1] * 1.0]
 
         # Aplica las fuerzas
+        self.apply_force(obstacle_avoidance)  # Aplica la fuerza de evitar obstáculos primero
         self.apply_force(separation_force)
         self.apply_force(alignment_force)
         self.apply_force(cohesion_force)
@@ -150,9 +192,6 @@ class Boid:
         )
 
     # Helper functions for vector math
-    def distance(self, point1, point2):
-        return math.sqrt((point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2)
-
     def magnitude(self, vector):
         return math.sqrt(vector[0] ** 2 + vector[1] ** 2)
 
