@@ -125,40 +125,50 @@ class Boid:
         return steer
 
     def avoid_obstacles(self, obstacles):
-        # Evitar los obstáculos
         steer = [0, 0]
         total = 0
-        safe_distance = 80  # Aumentar la distancia para empezar a evitar los obstáculos antes
-        max_avoid_force = 0.5  # Incrementar la fuerza máxima de evitación
+        safe_distance = 80  # Aumenta la distancia para empezar a detectar obstáculos antes
+        max_avoid_force = 0.3
+        rotation_force = 0.05  # Esta será la fuerza aplicada para que los boids roten alrededor del obstáculo
 
         for obstacle in obstacles:
+            # Aseguramos que siempre se calcule la distancia entre el boid y el obstáculo
             distance = self.distance(self.position, obstacle)
+            
             if distance < safe_distance:  # Si está dentro del rango seguro
                 diff = [self.position[0] - obstacle[0], self.position[1] - obstacle[1]]
                 diff = self.normalize(diff)
-                # Aplicar una fuerza inversamente proporcional a la distancia
-                diff = [diff[0] / (distance ** 2), diff[1] / (distance ** 2)]
-                steer[0] += diff[0]
-                steer[1] += diff[1]
+                
+                # Si está muy cerca del obstáculo, aplicar la fuerza tangencial para rodearlo
+                if distance < 50:  # Establecemos que si está muy cerca del obstáculo
+                    # Calcular la fuerza tangencial para que el boid rodee el obstáculo
+                    tangent = [-diff[1], diff[0]]  # Gira la dirección 90 grados para moverse en círculo
+                    steer[0] += tangent[0] * rotation_force
+                    steer[1] += tangent[1] * rotation_force
+                else:
+                    # Si está a una distancia segura, solo evitar el obstáculo
+                    diff = [diff[0] / (distance ** 2), diff[1] / (distance ** 2)]
+                    steer[0] += diff[0]
+                    steer[1] += diff[1]
+                    
                 total += 1
 
         if total > 0:
             steer[0] /= total
             steer[1] /= total
 
-            # Asegurarse de que la magnitud de la fuerza sea adecuada
             if self.magnitude(steer) > 0:
                 steer = self.normalize(steer)
                 steer = [steer[0] * self.max_speed, steer[1] * self.max_speed]
                 steer[0] -= self.velocity[0]
                 steer[1] -= self.velocity[1]
 
-                # Aumentar la fuerza de evasión de obstáculos
+                # Aplica la fuerza final con menos impacto
                 steer = self.normalize(steer)
                 steer = [steer[0] * max_avoid_force, steer[1] * max_avoid_force]
 
         return steer
-    
+
     def apply_behaviors(self, boids, obstacles):
         # Aplica las reglas de flocking
         separation_force = self.separation(boids)
@@ -167,16 +177,16 @@ class Boid:
         obstacle_avoidance = self.avoid_obstacles(obstacles)  # Evitar los obstáculos
 
         # Ajusta los pesos de las fuerzas
-        obstacle_avoidance = [obstacle_avoidance[0] * 3.0, obstacle_avoidance[1] * 3.0]  # Dar más peso a la evasión de obstáculos
+        obstacle_avoidance = [obstacle_avoidance[0] * 2.0, obstacle_avoidance[1] * 2.0]  # Dar más peso a la evasión/rotación temporalmente
         separation_force = [separation_force[0] * 1.5, separation_force[1] * 1.5]
         alignment_force = [alignment_force[0] * 1.0, alignment_force[1] * 1.0]
         cohesion_force = [cohesion_force[0] * 1.0, cohesion_force[1] * 1.0]
 
         # Aplica las fuerzas
-        self.apply_force(obstacle_avoidance)  # Aplica la fuerza de evitar obstáculos primero
         self.apply_force(separation_force)
         self.apply_force(alignment_force)
         self.apply_force(cohesion_force)
+        self.apply_force(obstacle_avoidance)  # Aplicar la fuerza de evitar/rodear el obstáculo
 
     def draw(self):
         # Dibuja el boid como un triángulo en Arcade
