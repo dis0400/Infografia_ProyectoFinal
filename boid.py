@@ -128,19 +128,19 @@ class Boid:
         safe_distance = 80  
         max_avoid_force = 0.3
         rotation_force = 0.05  
-        safe_distance_triangle = 20  # Asegúrate de definir esto correctamente
-        boids_to_add = 1  # Si solo deseas añadir un boid al interactuar con el triángulo
+        safe_distance_triangle = 20 
+        boids_to_add = 1  
        
 
         for obstacle in obstacles:
             distance = self.distance(self.position, obstacle)
             if obstacle[2] == "triangle":
                 if distance < safe_distance_triangle:
-                    if not self.touched_triangle:  # Asegúrate de que cada boid tiene este atributo
+                    if not self.touched_triangle:  
                         new_boid = Boid(self.position[0] + random.randint(-10, 10), self.position[1] + random.randint(-10, 10))
                         boids.append(new_boid)
-                        self.touched_triangle = True  # Marcar como tocado
-                        return [0, 0]  # Termina la función aquí para no agregar más fuerzas
+                        self.touched_triangle = True  
+                        return [0, 0]  
                 continue
             
             if distance < safe_distance:  
@@ -175,7 +175,6 @@ class Boid:
         return steer
 
     def apply_behaviors(self, boids, obstacles, behavior_mode):
-    # Inicializa obstacle_avoidance
         obstacle_avoidance = [0, 0]
         
         if behavior_mode == "cohesion":
@@ -191,19 +190,16 @@ class Boid:
             separation_force = [separation_force[0] * 1.5, separation_force[1] * 1.5]
             self.apply_force(separation_force)
         else:
-            # Comportamiento normal (cohesión, alineación y separación juntos)
             separation_force = self.separation(boids)
             alignment_force = self.alignment(boids)
             cohesion_force = self.cohesion(boids)
             obstacle_avoidance = self.avoid_obstacles(obstacles, boids) 
 
-            # Ajusta los pesos de las fuerzas
             separation_force = [separation_force[0] * 1.5, separation_force[1] * 1.5]
             alignment_force = [alignment_force[0] * 1.0, alignment_force[1] * 1.0]
             cohesion_force = [cohesion_force[0] * 1.0, cohesion_force[1] * 1.0]
             obstacle_avoidance = [obstacle_avoidance[0] * 2.0, obstacle_avoidance[1] * 2.0]
 
-            # Aplica las fuerzas
             self.apply_force(separation_force)
             self.apply_force(alignment_force)
             self.apply_force(cohesion_force)

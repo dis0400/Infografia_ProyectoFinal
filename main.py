@@ -14,7 +14,7 @@ class FlockingSimulation(arcade.Window):
         self.boids = []
         self.obstacles = []  
         self.current_shape = "circle"  
-        self.colors  = [  # Lista de colores válidos
+        self.colors  = [  
             arcade.color.RED,
             arcade.color.BLUE,
             arcade.color.GREEN,
@@ -26,7 +26,7 @@ class FlockingSimulation(arcade.Window):
             arcade.color.MAGENTA,
         ]
         self.group_colors ={}
-        self.global_speed_multiplier = 1  # Controlar la velocidad de los boids
+        self.global_speed_multiplier = 1 
         self.behavior_mode = "normal"
                 
     def setup(self):
@@ -40,13 +40,13 @@ class FlockingSimulation(arcade.Window):
         elif key == arcade.key.T:
             self.current_shape = "triangle"
         elif key == arcade.key.KEY_1:
-            self.global_speed_multiplier = 0.2  # Velocidad lenta
+            self.global_speed_multiplier = 0.2 
         elif key == arcade.key.KEY_2:
-            self.global_speed_multiplier = 1  # Velocidad normal
+            self.global_speed_multiplier = 1  
         elif key == arcade.key.KEY_3:
-            self.global_speed_multiplier = 3  # Velocidad rápida
+            self.global_speed_multiplier = 3  
         elif key == arcade.key.KEY_4:
-            self.global_speed_multiplier = 0  # Pausar
+            self.global_speed_multiplier = 0  
         elif key == arcade.key.J:
             self.behavior_mode = "cohesion"
         elif key == arcade.key.L:
@@ -54,7 +54,7 @@ class FlockingSimulation(arcade.Window):
         elif key == arcade.key.I:
             self.behavior_mode = "separation"
         elif key == arcade.key.N:
-            self.behavior_mode = "normal"  # Restaurar comportamiento original
+            self.behavior_mode = "normal"  
 
     def on_draw(self):      
         arcade.start_render()
@@ -80,22 +80,21 @@ class FlockingSimulation(arcade.Window):
     def update(self, delta_time):
         self.update_groups() 
         
-        if self.global_speed_multiplier > 0:  # Solo actualizar los boids si el multiplicador es mayor a 0
+        if self.global_speed_multiplier > 0:  
             for boid in self.boids:
-                boid.max_speed *= self.global_speed_multiplier  # Aplicar el multiplicador global de velocidad
+                boid.max_speed *= self.global_speed_multiplier 
                 boid.edges(SCREEN_WIDTH, SCREEN_HEIGHT)
                 boid.apply_behaviors(self.boids, self.obstacles, self.behavior_mode)
                 boid.update()
-                boid.max_speed /= self.global_speed_multiplier  # Restablecer la velocidad original para el próximo ciclo
+                boid.max_speed /= self.global_speed_multiplier  
                 
     def update_groups(self):
-        group_threshold = 50  # Distancia para considerar boids como parte del mismo grupo
-        groups = []  # Lista para almacenar los grupos de boids
-        visited = set()  # Conjunto para rastrear boids ya asignados a un grupo
+        group_threshold = 50  
+        groups = [] 
+        visited = set()  
 
         for boid in self.boids:
             if boid not in visited:
-                # Crear un nuevo grupo para cada boid no visitado
                 current_group = []
                 stack = [boid]
                 while stack:
@@ -103,27 +102,25 @@ class FlockingSimulation(arcade.Window):
                     if current not in visited:
                         visited.add(current)
                         current_group.append(current)
-                        # Considerar vecinos como parte del mismo grupo si están dentro del umbral
+
                         for neighbor in self.boids:
                             if neighbor not in visited and self.distance(boid.position, neighbor.position) < group_threshold:
                                 stack.append(neighbor)
                 groups.append(current_group)
 
-        # Asignar un color único a cada grupo
-                # Asignar un color a cada grupo de forma consistente
-        new_group_colors = {}  # Temporal para los nuevos grupos
+        new_group_colors = {}
         for group in groups:
-            group_id = tuple(sorted(tuple(boid.position) for boid in group))  # Convertir las posiciones a tuplas y luego crear una tupla para la ID del grupo
+            group_id = tuple(sorted(tuple(boid.position) for boid in group)) 
             if group_id in self.group_colors:
-                group_color = self.group_colors[group_id]  # Mantener el color si el grupo ya existía
+                group_color = self.group_colors[group_id] 
             else:
-                group_color = random.choice(self.colors)  # Asignar un color aleatorio si es un nuevo grupo
-            new_group_colors[group_id] = group_color  # Guardar el color del grupo
+                group_color = random.choice(self.colors)  
+            new_group_colors[group_id] = group_color  
 
             for boid in group:
-                boid.color = group_color  # Asignar color al boid
+                boid.color = group_color 
 
-        self.group_colors = new_group_colors  # Actualizar los colores de los grupos
+        self.group_colors = new_group_colors  
 
 
     def distance(self, point1, point2):
@@ -133,5 +130,3 @@ if __name__ == "__main__":
     window = FlockingSimulation(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     window.setup()
     arcade.run()
-# forma de cambiar los paraetros, la velocidad, parametros mientras se ejecute, conectar de forma dinamica
-#hacer mas visual, los boids que se formen cambiar de color, umbral de distancia para cabiar de color
