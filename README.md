@@ -25,7 +25,7 @@ Este proyecto presenta una **Simulación de Boids con Arcade** que utiliza el al
   ```
   pip install arcade
   ```
-# Uso
+## Uso
 Inicia el simulador ejecutando 
 ```
 python main.py
@@ -43,10 +43,13 @@ Para **interactuar** con la simulaci[on utiliza las siguientes teclas:
 - Tecla I: Los boids siguen solo la regla de separación.
 - Tecla N: Los boids vuelven a comportarse normalmente.
 
-# Estructura del proyecto
+## Estructura del proyecto
 ```
 📦Simulador_Boids
  ┣ 📜README.md
  ┣ 📜main.py
  ┗ 📜boid.py
 ```
+## Demo
+
+[![Mira el video](https://img.youtube.com/vi/Xg1GTb69LRg/0.jpg)](https://youtu.be/Xg1GTb69LRg?si=U5WngfsA1Bwvibla)
