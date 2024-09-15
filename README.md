@@ -46,7 +46,6 @@ Para **interactuar** con la simulaci[on utiliza las siguientes teclas:
 # Estructura del proyecto
 ```
 📦Simulador_Boids
- ┣ 📂assets
  ┣ 📜README.md
  ┣ 📜main.py
  ┗ 📜boid.py
